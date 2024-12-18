@@ -23,7 +23,6 @@ let gap = 40;
 let Ypos = 150; 
 let Yvel = 0; 
 let gravity = 0.2;
-let pipeSpeed = 4;
 
 
 scored_sound = "./audio/score.mp3";
@@ -58,7 +57,7 @@ function draw() {
     Yvel += gravity;
     Ypos += Yvel;
 
-
+    
     for (let i = 0; i < pipes.length; i++) {
         if (pipes.length >= 10) {
             pipes.shift();
@@ -68,7 +67,7 @@ function draw() {
 
 
 
-            pipes[i].x -= pipeSpeed;
+            pipes[i].x -= pipes[i].speed;
 
             if (pipes[i].x == pipes[i].spawnDistance) {
                 pipes.push({
@@ -81,9 +80,8 @@ function draw() {
             }
         }
         console.log(pipes.length);
+        
     }
-
-    pipeSpeed += 0.01;
 
     if (Ypos >= canvas.height - road.height - bird.height) {
         reload()
@@ -105,8 +103,6 @@ function reload() {
         spawnDistance: 20,
         speed: 2,
     }
-    pipeSpeed = 2;
-
 }
 
 
