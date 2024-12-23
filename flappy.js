@@ -14,18 +14,23 @@ let pipes = [];
 pipes[0] = {
     x: canvas.width,
     y: Math.random() * -118,
-    gap: 50,
+    gap: 200,
     spawnDistance: 20,
     speed: 2,
 }
 
 let gap = 40;
+let Xpos = 20;
 let Ypos = 150; 
 let Yvel = 0; 
 let gravity = 0.2;
 
+let scored = 0;
+let best_scored = 0; 
+let buttonActive = false;
+// let lastSpeed = 0;
 
-scored_sound = "./audio/score.mp3";
+scored_sound.src = "./audio/score.mp3";
 fly_audio.src = "./audio/fly.mp3";
 
 pipeBottom.src = "img/pipeBottom.png";
@@ -39,7 +44,7 @@ canvas.width = 256;
 canvas.height = 512;
 
 
-canvas.addEventListener("mousedown", moveUp);
+canvas.addEventListener('click', moveUp);
 
 
 function moveUp() {
@@ -48,47 +53,96 @@ function moveUp() {
     fly_audio.play();
 }
 
+
 function draw() {
     ctx.drawImage(back, 0, 0);
     ctx.drawImage(road, 0, canvas.height - 118)
-    ctx.drawImage(bird, 20, Ypos);
+    ctx.drawImage(bird, Xpos, Ypos);
 
 
-    Yvel += gravity;
-    Ypos += Yvel;
+    if (!paused) {
+        Yvel += gravity;
+        Ypos += Yvel;
+        document.querySelector("button").style.backgroundColor = "rgba(176, 6, 6, 0.8)"
 
+    } else {
+        document.querySelector("button").style.backgroundColor = "rgba(65, 176, 6, 0.8)"
+        ctx.fillRect(0, 0, 256, 512)
+        ctx.fillStyle = "rgba(0,0,0,0.3)"
+    }
     
-    for (let i = 0; i < pipes.length; i++) {
-        if (pipes.length >= 10) {
-            pipes.shift();
-        } else {
-            ctx.drawImage(pipeUp, pipes[i].x, pipes[i].y);
-            ctx.drawImage(pipeBottom, pipes[i].x, pipes[i].y + pipeBottom.height + pipes[i].gap);
+        for (let i = 0; i < pipes.length; i++) {
+            if (pipes.length >= 10) {
+                pipes.shift();
+            } else {
+                ctx.drawImage(pipeUp, pipes[i].x, pipes[i].y);
+                ctx.drawImage(pipeBottom, pipes[i].x, pipes[i].y + pipeUp.height + pipes[i].gap);
+
+                // function game_pause() {
+                //     if (buttonActive) {
+                //         pipes[i].speed = 0;
+                //         buttonActive = false;
+                //     } else {
+                //         lastSpeed = pipes[i].speed;
+                //         pipes[i].speed = lastSpeed;
+                //         buttonActive = true;
+                //     }
+                // }
 
 
+                if (!paused) {
+                    pipes[i].x -= pipes[i].speed;
+                }
 
-            pipes[i].x -= pipes[i].speed;
-
-            if (pipes[i].x == pipes[i].spawnDistance) {
-                pipes.push({
-                    x: canvas.width,
-                    y: Math.random() * -118,
-                    gap: pipes[i].gap - pipes[i].speed + 1,
-                    spawnDistance: pipes[i].spawnDistance + pipes[i].speed,
-                    speed: 2,
-                });
+                if (pipes[i].x == pipes[i].spawnDistance) {
+                    pipes.push({
+                        x: canvas.width,
+                        y: Math.random() * -118,
+                        gap: pipes[i].gap - (pipes[i].speed + 2),
+                        spawnDistance: pipes[i].spawnDistance + (pipes[i].speed),
+                        speed: 2,
+                    });
+                }
             }
-        }
-        console.log(pipes.length);
-        
-    }
 
-    if (Ypos >= canvas.height - road.height - bird.height) {
-        reload()
-    }
+        
+
+            if (Xpos + bird.width >= pipes[i].x &&
+                Xpos <= pipes[i].x + pipeUp.width &&
+                (Ypos <= pipes[i].y + pipeUp.height ||
+                    Ypos + bird.height >= pipes[i].y + pipeUp.height + pipes[i].gap))
+                reload();
+            { }
+            if (pipes[i].x == 0) {
+                scored_sound.volume = 0.05;
+                scored_sound.play();
+                scored += 1;
+                document.getElementById("score").innerHTML = `Score: ${scored}`;
+                if (scored >= best_scored) {
+                    best_scored = scored
+                    document.getElementById("best_score").innerHTML = `Best Score: ${best_scored}`;
+                }
+            }
+        
+        }
+
+        if (Ypos >= canvas.height - road.height - bird.height || Ypos <= 0) {
+            reload()
+        }
+    
 
     
 
+}
+
+let paused = false;
+
+function game_pause() {
+    if (!paused) {
+        paused = true
+    } else {
+        paused = false
+    }
 }
 
 function reload() {
@@ -99,10 +153,12 @@ function reload() {
     pipes[0] = {
         x: canvas.width,
         y: Math.random() * -118,
-        gap: 50,
+        gap: 200,
         spawnDistance: 20,
         speed: 2,
     }
+    scored = 0;
+    document.getElementById("score").innerHTML = `Score: ${scored}`;
 }
 
 
